@@ -1,0 +1,23 @@
+name: lca_md
+channels:
+  - pytorch
+  - defaults
+dependencies:
+  - python=3.7
+  - numpy
+  - pip
+  - pip:
+      - opencv-python
+      - Pillow
+      - tensorboard
+      - timm
+      - matplotlib
+      - scipy
+      - sklearn
+      - einops
+      - mmcls
+      - PyYAML
+  - pytorch
+  - torchvision
+  - cudatoolkit
+  - tqdm
