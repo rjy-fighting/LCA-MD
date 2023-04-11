@@ -9,7 +9,7 @@ while simultaneously inhibiting over-activation of the background. To this end, 
 separates foreground and background more clearly to suppress over-activation of background. We further design a semantic-spatial fusion module (SSFM), which leverages cross-patch pairs selected from multi-direction to capture local cross-patch features and diffuse activation across occlusions.
 
 ## Architecture Overview
-![](./figures/Overview.png)             
+![](./figures/overview.png)             
 
 ## Results and Models
 
