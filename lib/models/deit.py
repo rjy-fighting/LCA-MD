@@ -51,13 +51,13 @@ class TFCM(nn.Module):
         N, C, H, W = x_patch.size()
 
         x_patch = self.conv3x3_1(x_patch)
-        ccam_ = cams.reshape(N, 1, H * W)
+        fctam_ = cams.reshape(N, 1, H * W)
         x = x_patch.reshape(N, C, H * W).permute(0, 2, 1).contiguous()
-        fg_feats = torch.matmul(ccam_, x) / (H * W)
-        bg_feats = torch.matmul(1 - ccam_, x) / (H * W)
-        ccam = rearrange(ccam_, 'B 1 (H W) -> B 1 H W', H=H)
+        fg_feats = torch.matmul(fctam_, x) / (H * W)
+        bg_feats = torch.matmul(1 - fctam_, x) / (H * W)
+        fctam = rearrange(fctam_, 'B 1 (H W) -> B 1 H W', H=H)
 
-        return fg_feats.reshape(x.size(0), -1), bg_feats.reshape(x.size(0), -1), ccam
+        return fg_feats.reshape(x.size(0), -1), bg_feats.reshape(x.size(0), -1), fctam
 
 
 class LCA_MD(VisionTransformer):
@@ -75,7 +75,7 @@ class LCA_MD(VisionTransformer):
         self.layers.append(d_cpab)
         for i in range(1, self.num_layers):
             self.layers.append(D_CPAB(dim=self.num_classes,
-                                       fusion_cfg=dict(LAq_Mat=d_cpab.fuse.LAq_Mat,
+                                       fusion_cfg=dict(LAq_Mat=d_cpab.ssfm.LAq_Mat,
                                                        loss_rate=1,
                                                        grid_size=(14, 14),
                                                        iteration=4)))
@@ -126,6 +126,10 @@ class LCA_MD(VisionTransformer):
         else:
             x_logits = self.avgpool(pred_semantic).squeeze(3).squeeze(2)
             predict = pred_cam * pred_semantic
+            if test_select != 0 and test_select > 0:
+                topk_ind = torch.topk(x_logits, test_select)[-1]
+                predict = torch.tensor([torch.take(a, idx, axis=0) for (a, idx)
+                                        in zip(cams, topk_ind)])
             return x_logits, predict, fg_feats, bg_feats
 
 
@@ -156,7 +160,7 @@ class D_CPAB(nn.Module):
         sim = embeddings_to_cosine_similarity_matrix(
             rearrange(x, 'B D H W -> B (H W) D'))
         thred = self.thred.to(x.device)
-        out_cam = einsum('b h w, b w -> b h', self.fuse(sim), cam)
+        out_cam = einsum('b h w, b w -> b h', self.ssfm(sim), cam)
         thred = thred * cam.max(1, keepdim=True)[0]
         out_cam = self.shrink(out_cam / thred)
         out_cam = norm_cam(out_cam)
