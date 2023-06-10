@@ -87,7 +87,7 @@ class SSFM(nn.Module):
         self._Dq_Mat = Dq_Mat
         self._LAq_Mat = LAq_Mat
 
-        self._LAq_Mat= self.getLAq_Mat()
+        self._LAq_Mat = self.getLAq_Mat()
         self.init_weights()
 
     def getTq_mat(self) -> coo_matrix:
@@ -131,7 +131,7 @@ class SSFM(nn.Module):
         '''
         if self._Dq_Mat is not None:
             return self._Dq_Mat
-        self._Tq_Mat = self.getAdj()
+        self._Tq_Mat = self.getTq_mat()
         self._Dq_Mat = diags(self._Tq_Mat.sum(axis=0).A1)  # Al
         return self._Dq_Mat
 
@@ -139,7 +139,7 @@ class SSFM(nn.Module):
         if self.LAq_Mat is not None:
             return self.LAq_Mat
         if self.Tq_Mat is None:
-            self.Tq_Mat = self.getAdj()
+            self.Tq_Mat = self.getTq_mat()
         if self.Dq_Mat is None:
             self.Dq_Mat = self.getDq_Mat()
         LAq_Mat = self.Dq_Mat - self.Tq_Mat  # Li
@@ -177,8 +177,6 @@ class SSFM(nn.Module):
         res = []
         around3 = []
         around4 = []
-        around5 = []
-        around6 = []
         if self.cross == 1:
             for i, ref in enumerate(id_c1):
                 idxes_1 = copy.deepcopy(idxes)
@@ -278,7 +276,6 @@ class SSFM(nn.Module):
                 c[0] = i[0]
                 c[1] = j[1]
                 res.append(c)
-                print('1', c)
                 d[1] = i[1]
                 d[0] = j[0]
                 res.append(d)
@@ -288,31 +285,10 @@ class SSFM(nn.Module):
                 c[0] = i[0]
                 c[1] = j[1]
                 res.append(c)
-                print('1', c)
                 d[1] = i[1]
                 d[0] = j[0]
-                print('2', d)
                 res.append(d)
-            for j, i in enumerate(around3):
-                if j <= 1:
-                    c = [1, 2]
-                    d = [1, 2]
-                    c[0] = i[0]
-                    c[1] = i[1] + 1
-                    d[0] = i[0]
-                    d[1] = i[1] - 1
-                    res.append(c)
-                    res.append(d)
-                else:
-                    c = [1, 2]
-                    d = [1, 2]
-                    c[0] = i[0] + 1
-                    c[1] = i[1]
-                    d[0] = i[0] - 1
-                    d[1] = i[1]
-                    res.append((c))
-                    res.append(d)
-        elif self.cross ==4:
+        elif self.cross == 4:
             for i, ref in enumerate(id_c1):
                 idxes_1 = copy.deepcopy(idxes)
                 idxes_1[i] = ref[0]
@@ -375,7 +351,6 @@ class SSFM(nn.Module):
                 c[0] = i[0]
                 c[1] = j[1]
                 res.append(c)
-                print('1', c)
                 d[1] = i[1]
                 d[0] = j[0]
                 res.append(d)
@@ -385,10 +360,8 @@ class SSFM(nn.Module):
                 c[0] = i[0]
                 c[1] = j[1]
                 res.append(c)
-                print('1', c)
                 d[1] = i[1]
                 d[0] = j[0]
-                print('2', d)
                 res.append(d)
             for i, j in zip(idc3, idc4):
                 c = [1, 2]
@@ -399,471 +372,8 @@ class SSFM(nn.Module):
                 d[1] = i[1]
                 d[0] = j[0]
                 res.append(d)
-            for j, i in enumerate(around3):
-                if j <= 1:
-                    c = [1, 2]
-                    d = [1, 2]
-                    c[0] = i[0]
-                    c[1] = i[1] + 1
-                    d[0] = i[0]
-                    d[1] = i[1] - 1
-                    res.append(c)
-                    res.append(d)
-                else:
-                    c = [1, 2]
-                    d = [1, 2]
-                    c[0] = i[0] + 1
-                    c[1] = i[1]
-                    d[0] = i[0] - 1
-                    d[1] = i[1]
-                    res.append((c))
-                    res.append(d)
-            for j, i in enumerate(around4):
-                if j <= 1:
-                    for k in [1, 2]:
-                        c = [1, 2]
-                        d = [1, 2]
-                        c[0] = i[0]
-                        c[1] = i[1] + k
-                        d[0] = i[0]
-                        d[1] = i[1] - k
-                        res.append(c)
-                        res.append(d)
-                else:
-                    for l in [1, 2]:
-                        c = [1, 2]
-                        d = [1, 2]
-                        c[0] = i[0] + l
-                        c[1] = i[1]
-                        d[0] = i[0] - l
-                        d[1] = i[1]
-                        res.append((c))
-                        res.append(d)
-        elif self.cross ==5:
-            for i, ref in enumerate(id_c1):
-                idxes_1 = copy.deepcopy(idxes)
-                idxes_1[i] = ref[0]
-                idxes_2 = copy.deepcopy(idxes)
-                idxes_2[i] = ref[1]
-                res.append(idxes_1)
-                res.append(idxes_2)
-            for i, ref in enumerate(id_c2):
-                idxes_1 = copy.deepcopy(idxes)
-                idxes_1[i] = ref[0]
-                idxes_2 = copy.deepcopy(idxes)
-                idxes_2[i] = ref[1]
-                res.append(idxes_1)
-                res.append(idxes_2)
-            for i, ref in enumerate(id_c3):
-                idxes_1 = copy.deepcopy(idxes)
-                idxes_1[i] = ref[0]
-                idxes_2 = copy.deepcopy(idxes)
-                idxes_2[i] = ref[1]
-                around3.append(idxes_1)
-                around3.append(idxes_2)
-                res.append(idxes_1)
-                res.append(idxes_2)
-            for i, ref in enumerate(id_c4):
-                idxes_1 = copy.deepcopy(idxes)
-                idxes_1[i] = ref[0]
-                idxes_2 = copy.deepcopy(idxes)
-                idxes_2[i] = ref[1]
-                around4.append(idxes_1)
-                around4.append(idxes_2)
-                res.append(idxes_1)
-                res.append(idxes_2)
-            for i, ref in enumerate(id_c5):
-                idxes_1 = copy.deepcopy(idxes)
-                idxes_1[i] = ref[0]
-                idxes_2 = copy.deepcopy(idxes)
-                idxes_2[i] = ref[1]
-                around5.append(idxes_1)
-                around5.append(idxes_2)
-                res.append(idxes_1)
-                res.append(idxes_2)
-            idc1 = list(itertools.product(*id_c1))
-            idc2 = list(itertools.product(*id_c2))
-            idc3 = list(itertools.product(*id_c3))
-            idc4 = list(itertools.product(*id_c4))
-            idc5 = list(itertools.product(*id_c5))
-            for i, ref in enumerate(idc1):
-                ind = [1, 2]
-                ind[0] = ref[0]
-                ind[1] = ref[1]
-                res.append(ind)
-            for i, ref in enumerate(idc2):
-                ind = [1, 2]
-                ind[0] = ref[0]
-                ind[1] = ref[1]
-                res.append(ind)
-            for i, ref in enumerate(idc3):
-                ind = [1, 2]
-                ind[0] = ref[0]
-                ind[1] = ref[1]
-                res.append(ind)
-            for i, ref in enumerate(idc4):
-                ind = [1, 2]
-                ind[0] = ref[0]
-                ind[1] = ref[1]
-                res.append(ind)
-            for i, ref in enumerate(idc5):
-                ind = [1, 2]
-                ind[0] = ref[0]
-                ind[1] = ref[1]
-                res.append(ind)
-            for i, j in zip(idc1, idc2):
-                c = [1, 2]
-                d = [1, 2]
-                c[0] = i[0]
-                c[1] = j[1]
-                res.append(c)
-                print('1', c)
-                d[1] = i[1]
-                d[0] = j[0]
-                res.append(d)
-            for i, j in zip(idc2, idc3):
-                c = [1, 2]
-                d = [1, 2]
-                c[0] = i[0]
-                c[1] = j[1]
-                res.append(c)
-                print('1', c)
-                d[1] = i[1]
-                d[0] = j[0]
-                print('2', d)
-                res.append(d)
-            for i, j in zip(idc3, idc4):
-                c = [1, 2]
-                d = [1, 2]
-                c[0] = i[0]
-                c[1] = j[1]
-                res.append(c)
-                d[1] = i[1]
-                d[0] = j[0]
-                res.append(d)
-            for i, j in zip(idc3, idc5):
-                c = [1, 2]
-                d = [1, 2]
-                c[0] = i[0]
-                c[1] = j[1]
-                res.append(c)
-                d[1] = i[1]
-                d[0] = j[0]
-                res.append(d)
-            for i, j in zip(idc4, idc5):
-                c = [1, 2]
-                d = [1, 2]
-                c[0] = i[0]
-                c[1] = j[1]
-                res.append(c)
-                d[1] = i[1]
-                d[0] = j[0]
-                res.append(d)
-            for j, i in enumerate(around3):
-                if j <= 1:
-                    c = [1, 2]
-                    d = [1, 2]
-                    c[0] = i[0]
-                    c[1] = i[1] + 1
-                    d[0] = i[0]
-                    d[1] = i[1] - 1
-                    res.append(c)
-                    res.append(d)
-                else:
-                    c = [1, 2]
-                    d = [1, 2]
-                    c[0] = i[0] + 1
-                    c[1] = i[1]
-                    d[0] = i[0] - 1
-                    d[1] = i[1]
-                    res.append((c))
-                    res.append(d)
-            for j, i in enumerate(around4):
-                if j <= 1:
-                    for k in [1, 2]:
-                        c = [1, 2]
-                        d = [1, 2]
-                        c[0] = i[0]
-                        c[1] = i[1] + k
-                        d[0] = i[0]
-                        d[1] = i[1] - k
-                        res.append(c)
-                        res.append(d)
-                else:
-                    for l in [1, 2]:
-                        c = [1, 2]
-                        d = [1, 2]
-                        c[0] = i[0] + l
-                        c[1] = i[1]
-                        d[0] = i[0] - l
-                        d[1] = i[1]
-                        res.append((c))
-                        res.append(d)
-            for j, i in enumerate(around5):
-                if j <= 1:
-                    for k in [1, 2]:
-                        c = [1, 2]
-                        d = [1, 2]
-                        c[0] = i[0]
-                        c[1] = i[1] + k
-                        d[0] = i[0]
-                        d[1] = i[1] - k
-                        res.append(c)
-                        res.append(d)
-                else:
-                    for l in [1, 2]:
-                        c = [1, 2]
-                        d = [1, 2]
-                        c[0] = i[0] + l
-                        c[1] = i[1]
-                        d[0] = i[0] - l
-                        d[1] = i[1]
-                        res.append((c))
-                        res.append(d)
-        elif self.cross ==6:
-            for i, ref in enumerate(id_c1):
-                idxes_1 = copy.deepcopy(idxes)
-                idxes_1[i] = ref[0]
-                idxes_2 = copy.deepcopy(idxes)
-                idxes_2[i] = ref[1]
-                res.append(idxes_1)
-                res.append(idxes_2)
-            for i, ref in enumerate(id_c2):
-                idxes_1 = copy.deepcopy(idxes)
-                idxes_1[i] = ref[0]
-                idxes_2 = copy.deepcopy(idxes)
-                idxes_2[i] = ref[1]
-                res.append(idxes_1)
-                res.append(idxes_2)
-            for i, ref in enumerate(id_c3):
-                idxes_1 = copy.deepcopy(idxes)
-                idxes_1[i] = ref[0]
-                idxes_2 = copy.deepcopy(idxes)
-                idxes_2[i] = ref[1]
-                around3.append(idxes_1)
-                around3.append(idxes_2)
-                res.append(idxes_1)
-                res.append(idxes_2)
-            for i, ref in enumerate(id_c4):
-                idxes_1 = copy.deepcopy(idxes)
-                idxes_1[i] = ref[0]
-                idxes_2 = copy.deepcopy(idxes)
-                idxes_2[i] = ref[1]
-                around4.append(idxes_1)
-                around4.append(idxes_2)
-                res.append(idxes_1)
-                res.append(idxes_2)
-            for i, ref in enumerate(id_c5):
-                idxes_1 = copy.deepcopy(idxes)
-                idxes_1[i] = ref[0]
-                idxes_2 = copy.deepcopy(idxes)
-                idxes_2[i] = ref[1]
-                around5.append(idxes_1)
-                around5.append(idxes_2)
-                res.append(idxes_1)
-                res.append(idxes_2)
-            for i, ref in enumerate(id_c6):
-                idxes_1 = copy.deepcopy(idxes)
-                idxes_1[i] = ref[0]
-                idxes_2 = copy.deepcopy(idxes)
-                idxes_2[i] = ref[1]
-                around5.append(idxes_1)
-                around5.append(idxes_2)
-                res.append(idxes_1)
-                res.append(idxes_2)
-            idc1 = list(itertools.product(*id_c1))
-            idc2 = list(itertools.product(*id_c2))
-            idc3 = list(itertools.product(*id_c3))
-            idc4 = list(itertools.product(*id_c4))
-            idc5 = list(itertools.product(*id_c5))
-            idc6 = list(itertools.product(*id_c6))
-            for i, ref in enumerate(idc1):
-                ind = [1, 2]
-                ind[0] = ref[0]
-                ind[1] = ref[1]
-                res.append(ind)
-            for i, ref in enumerate(idc2):
-                ind = [1, 2]
-                ind[0] = ref[0]
-                ind[1] = ref[1]
-                res.append(ind)
-            for i, ref in enumerate(idc3):
-                ind = [1, 2]
-                ind[0] = ref[0]
-                ind[1] = ref[1]
-                res.append(ind)
-            for i, ref in enumerate(idc4):
-                ind = [1, 2]
-                ind[0] = ref[0]
-                ind[1] = ref[1]
-                res.append(ind)
-            for i, ref in enumerate(idc5):
-                ind = [1, 2]
-                ind[0] = ref[0]
-                ind[1] = ref[1]
-                res.append(ind)
-            for i, ref in enumerate(idc6):
-                ind = [1, 2]
-                ind[0] = ref[0]
-                ind[1] = ref[1]
-                res.append(ind)
-            for i, j in zip(idc1, idc2):
-                c = [1, 2]
-                d = [1, 2]
-                c[0] = i[0]
-                c[1] = j[1]
-                res.append(c)
-                print('1', c)
-                d[1] = i[1]
-                d[0] = j[0]
-                res.append(d)
-            for i, j in zip(idc2, idc3):
-                c = [1, 2]
-                d = [1, 2]
-                c[0] = i[0]
-                c[1] = j[1]
-                res.append(c)
-                print('1', c)
-                d[1] = i[1]
-                d[0] = j[0]
-                print('2', d)
-                res.append(d)
-            for i, j in zip(idc3, idc4):
-                c = [1, 2]
-                d = [1, 2]
-                c[0] = i[0]
-                c[1] = j[1]
-                res.append(c)
-                d[1] = i[1]
-                d[0] = j[0]
-                res.append(d)
-            for i, j in zip(idc3, idc5):
-                c = [1, 2]
-                d = [1, 2]
-                c[0] = i[0]
-                c[1] = j[1]
-                res.append(c)
-                d[1] = i[1]
-                d[0] = j[0]
-                res.append(d)
-            for i, j in zip(idc4, idc5):
-                c = [1, 2]
-                d = [1, 2]
-                c[0] = i[0]
-                c[1] = j[1]
-                res.append(c)
-                d[1] = i[1]
-                d[0] = j[0]
-                res.append(d)
-            for i, j in zip(idc5, idc6):
-                c = [1, 2]
-                d = [1, 2]
-                c[0] = i[0]
-                c[1] = j[1]
-                res.append(c)
-                d[1] = i[1]
-                d[0] = j[0]
-                res.append(d)
-            for i, j in zip(idc4, idc6):
-                c = [1, 2]
-                d = [1, 2]
-                c[0] = i[0]
-                c[1] = j[1]
-                res.append(c)
-                d[1] = i[1]
-                d[0] = j[0]
-                res.append(d)
-            for i, j in zip(idc3, idc6):
-                c = [1, 2]
-                d = [1, 2]
-                c[0] = i[0]
-                c[1] = j[1]
-                res.append(c)
-                d[1] = i[1]
-                d[0] = j[0]
-                res.append(d)
-            for j, i in enumerate(around3):
-                if j <= 1:
-                    c = [1, 2]
-                    d = [1, 2]
-                    c[0] = i[0]
-                    c[1] = i[1] + 1
-                    d[0] = i[0]
-                    d[1] = i[1] - 1
-                    res.append(c)
-                    res.append(d)
-                else:
-                    c = [1, 2]
-                    d = [1, 2]
-                    c[0] = i[0] + 1
-                    c[1] = i[1]
-                    d[0] = i[0] - 1
-                    d[1] = i[1]
-                    res.append((c))
-                    res.append(d)
-            for j, i in enumerate(around4):
-                if j <= 1:
-                    for k in [1, 2]:
-                        c = [1, 2]
-                        d = [1, 2]
-                        c[0] = i[0]
-                        c[1] = i[1] + k
-                        d[0] = i[0]
-                        d[1] = i[1] - k
-                        res.append(c)
-                        res.append(d)
-                else:
-                    for l in [1, 2]:
-                        c = [1, 2]
-                        d = [1, 2]
-                        c[0] = i[0] + l
-                        c[1] = i[1]
-                        d[0] = i[0] - l
-                        d[1] = i[1]
-                        res.append(c)
-                        res.append(d)
-            for j, i in enumerate(around5):
-                if j <= 1:
-                    for k in [1, 2]:
-                        c = [1, 2]
-                        d = [1, 2]
-                        c[0] = i[0]
-                        c[1] = i[1] + k
-                        d[0] = i[0]
-                        d[1] = i[1] - k
-                        res.append(c)
-                        res.append(d)
-                else:
-                    for l in [1, 2]:
-                        c = [1, 2]
-                        d = [1, 2]
-                        c[0] = i[0] + l
-                        c[1] = i[1]
-                        d[0] = i[0] - l
-                        d[1] = i[1]
-                        res.append(c)
-                        res.append(d)
-            for j, i in enumerate(around6):
-                if j <= 1:
-                    for k in [1, 2]:
-                        c = [1, 2]
-                        d = [1, 2]
-                        c[0] = i[0]
-                        c[1] = i[1] + k
-                        d[0] = i[0]
-                        d[1] = i[1] - k
-                        res.append(c)
-                        res.append(d)
-                else:
-                    for l in [1, 2]:
-                        c = [1, 2]
-                        d = [1, 2]
-                        c[0] = i[0] + l
-                        c[1] = i[1]
-                        d[0] = i[0] - l
-                        d[1] = i[1]
-                        res.append(c)
-                        res.append(d)
+
+
         return res
 
     def selectValidIdx(self, idxes):
@@ -913,11 +423,11 @@ class SSFM(nn.Module):
 
     @property
     def LAq_Mat(self):
-        return self._lap
+        return self._LAq_Mat
 
     @LAq_Mat.setter
     def LAq_Mat(self, val):
-        self._lap = val
+        self._LAq_Mat = val
 
     @property
     def loss_rate(self):
